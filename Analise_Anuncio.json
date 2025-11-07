@@ -1,0 +1,793 @@
+{
+  "name": "Analise/Anuncio",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4688,
+        -528
+      ],
+      "id": "769e53e6-0d72-45d0-93db-b48557b958a5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4912,
+        -528
+      ],
+      "id": "f1493cc4-69fa-4949-8a68-cdebf7818785",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b9f4bc74-772e-40fd-9f1f-780f2752b26a",
+              "name": "image_url",
+              "value": "={{ $json.query.image_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -528
+      ],
+      "id": "7e6c9360-688b-4675-95e2-195bd1b68377",
+      "name": "Image url"
+    },
+    {
+      "parameters": {
+        "path": "analise-anuncio",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1892c232-b062-4b51-852d-ca39c0fbf5c7",
+      "name": "Receber image url (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -528
+      ],
+      "webhookId": "c71ee937-453e-481a-bf75-394c1bc43c41"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Agent image analyzer').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um analista de inteligência de mercado especializado em mapeamento competitivo.\n\nSua função é identificar **concorrentes de mercado** com base nas informações fornecidas sobre uma marca e seu setor.\n\nA entrada contém um json com as seguintes informações:\n- nome da marca analisada - marca_identificada\n- setor ou categoria de atuação - setor_da_marca\n- entre outras relevantes para a busca de concorrentes\n\nCom base nisso, identifique **principais concorrentes diretos e indiretos** relevantes no mercado atual.\n\nResponda **somente** com um JSON no formato abaixo:\n\n{\n  \"marca_analisada\": \"\",\n  \"setor\": \"\",\n  \"principais_concorrentes_diretos\": [\n    {\"nome\": \"\", \"pais_origem\": \"\", \"comentario\": \"\"},\n    {\"nome\": \"\", \"pais_origem\": \"\", \"comentario\": \"\"}\n  ],\n  \"concorrentes_indiretos\": [\n    {\"nome\": \"\", \"pais_origem\": \"\", \"comentario\": \"\"}\n  ],\n  \"observacoes_de_mercado\": \"\",\n  \"fonte_de_inferencia\": \"\"\n}\n\n**Instruções adicionais:**\n- Se possível, priorize marcas com presença global ou regional relevante.\n- “Concorrentes diretos” são empresas que oferecem produtos/serviços semelhantes ao mesmo público-alvo.\n- “Concorrentes indiretos” são empresas de outros segmentos que disputam a mesma atenção, propósito ou necessidade do consumidor.\n- Em “comentario”, descreva brevemente o posicionamento ou diferencial percebido de cada concorrente.\n- Se não houver informações suficientes, indique “informação insuficiente”.\n- A “fonte_de_inferencia” deve ser descritiva (ex: “inferido com base no setor automotivo premium”, “empresas conhecidas no segmento de bebidas energéticas”).\n\nResponda em português e apenas com o JSON final, sem explicações adicionais."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -528
+      ],
+      "id": "72419da4-a6c4-443f-a510-8058a16bef23",
+      "name": "Agent competition",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sEegxxeLg2GZxVfk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Agent competition').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um analista de estratégia de marca e posicionamento competitivo.\n\nSua função é comparar uma marca com seus principais concorrentes, com base nas informações fornecidas de ambos os agentes anteriores:\n1. A análise de anúncio (marca, cores, tom de voz, proposta de valor, objetivo da campanha etc.)\n2. A lista de concorrentes diretos e indiretos.\n\nRealize uma comparação estratégica e responda **somente** com um JSON estruturado no formato abaixo:\n\n{\n  \"marca_analisada\": \"\",\n  \"resumo_posicionamento_marca\": \"\",\n  \"comparativo_concorrentes\": [\n    {\n      \"concorrente\": \"\",\n      \"pontos_em_comum\": \"\",\n      \"principais_diferencas\": \"\",\n      \"vantagem_competitiva_da_marca\": \"\",\n      \"oportunidades_de_diferenciacao\": \"\"\n    }\n  ],\n  \"analise_geral\": {\n    \"forcas_da_marca\": \"\",\n    \"fraquezas_da_marca\": \"\",\n    \"oportunidades_de_mercado\": \"\",\n    \"ameacas\": \"\"\n  },\n  \"insight_final\": \"\"\n}\n\n**Instruções adicionais:**\n- A marca anlisada contém os dados a seguir:\n{{ $('Agent image analyzer').item.json.content.parts[0].text }}\n\n- A lista de concorrentes é a seguinte:\n{{ $('Agent competition').item.json.content.parts[0].text }}\n\n- Para cada concorrente, descreva brevemente (1–3 frases) os principais pontos comparativos.\n- “Pontos em comum” e “principais diferenças” devem considerar: proposta de valor, público-alvo, estilo de comunicação, presença de marca e percepção de valor.\n- “Vantagem competitiva da marca” indica onde ela se destaca atualmente.\n- “Oportunidades de diferenciação” aponta aspectos que a marca poderia explorar.\n- No bloco “analise_geral”, utilize uma perspectiva tipo SWOT (forças, fraquezas, oportunidades, ameaças).\n- “insight_final” deve trazer uma conclusão estratégica, como uma frase síntese (“A marca se diferencia por seu apelo emocional, mas precisa reforçar a clareza de seu benefício funcional.”)\n- Use linguagem objetiva, profissional e em português.\n- Se houver informação insuficiente para algum campo, escreva “informação insuficiente”.\n\nResponda **somente com o JSON final**, sem explicações adicionais ou formatação extra."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -528
+      ],
+      "id": "ebf08077-4e09-499c-8df4-96d7f2d7c8e5",
+      "name": "Agent comparator",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sEegxxeLg2GZxVfk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "analysis",
+        "fields": "analise",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -528
+      ],
+      "id": "bd137742-bd15-42f2-b951-24bee13e6c22",
+      "name": "Insert analysis",
+      "credentials": {
+        "mongoDb": {
+          "id": "030nQ52whQNZlRf0",
+          "name": "MongoDB_ads_analyzer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.content.parts[0].text.replace(/^```json\\n/, '').replace(/```$/, '');\n\nconst result = { \"analise\": JSON.parse(data) };\nresult.analise.url = $('Image url').first().json.image_url;\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -528
+      ],
+      "id": "97033c4a-35c8-4fc9-ad08-88d72b638e30",
+      "name": "Format analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  concorrencia: JSON.parse($input.first().json.content.parts[0].text)\n};\ndata.concorrencia.url = $('Image url').first().json.image_url;\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -528
+      ],
+      "id": "1c864721-ca1b-4dd2-8009-d8472b9e35c9",
+      "name": "Format competition"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  comparacao: JSON.parse($input.first().json.content.parts[0].text)\n}\ndata.comparacao.url = $('Image url').first().json.image_url;\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        -528
+      ],
+      "id": "2523f312-c252-48a9-9f32-6df4f8c15a04",
+      "name": "Format comparator"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "competition",
+        "fields": "concorrencia",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        -528
+      ],
+      "id": "6fcc11da-680c-4cbd-8199-e4f763259445",
+      "name": "Insert competition",
+      "credentials": {
+        "mongoDb": {
+          "id": "030nQ52whQNZlRf0",
+          "name": "MongoDB_ads_analyzer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "comparator",
+        "fields": "comparacao",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -528
+      ],
+      "id": "50a4215f-96ad-4fa8-9fca-4b90b828c710",
+      "name": "Insert comparator",
+      "credentials": {
+        "mongoDb": {
+          "id": "030nQ52whQNZlRf0",
+          "name": "MongoDB_ads_analyzer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Agent comparator').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um estrategista de marketing e branding com experiência em posicionamento de mercado e diferenciação competitiva.\n\nCom base nos dados fornecidos da análise anterior (marca analisada, comparação com concorrentes, forças, fraquezas e oportunidades), desenvolva **recomendações estratégicas de marketing** para fortalecer a presença e a diferenciação da marca.\n\nResponda **somente** com um JSON no formato:\n\n{\n  \"marca_analisada\": \"\",\n  \"resumo_posicionamento_atual\": \"\",\n  \"estrategia_recomendada\": {\n    \"posicionamento_sugerido\": \"\",\n    \"proposta_de_valor_reforçada\": \"\",\n    \"mensagem_principal\": \"\",\n    \"tom_de_voz_sugerido\": \"\",\n    \"segmentos_de_publico_prioritarios\": [],\n    \"canais_de_comunicacao_recomendados\": [],\n    \"acoes_taticas_sugeridas\": []\n  },\n  \"indicadores_de_sucesso\": [\n    \"Aumento de awareness\",\n    \"Engajamento nas redes\",\n    \"Intenção de compra\",\n    \"Percepção de marca\"\n  ],\n  \"insight_final\": \"\"\n}\n\n**Instruções:**\n- O “posicionamento_sugerido” deve representar a forma ideal de a marca se destacar no mercado.\n- “Proposta_de_valor_reforçada” resume o benefício central que deve ser enfatizado.\n- “Tom_de_voz_sugerido” deve alinhar com o público e a mensagem desejada.\n- “Segmentos_de_publico_prioritarios” deve conter de 1 a 3 perfis de consumidores ideais.\n- “Canais_de_comunicacao_recomendados” deve indicar onde a marca deve concentrar esforços (ex: redes sociais, mídia paga, influenciadores, eventos).\n- “Acoes_taticas_sugeridas” deve trazer recomendações concretas e realistas (ex: campanha temática, reposicionamento visual, parcerias, storytelling emocional).\n- “Indicadores_de_sucesso” são métricas esperadas para medir o impacto.\n- O “insight_final” deve ser uma conclusão estratégica, como: “A marca deve reforçar autenticidade e propósito social para se diferenciar dos concorrentes de preço.”\n- Se houver informação insuficiente para algum campo, escreva “informação insuficiente”.\n\nResponda em português e apenas com o JSON final."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2864,
+        -528
+      ],
+      "id": "92b68db5-b69f-491c-9480-87b4974d69ff",
+      "name": "Agent strategist",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sEegxxeLg2GZxVfk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  estrategia: JSON.parse($input.first().json.content.parts[0].text)\n};\ndata.estrategia.url = $('Image url').first().json.image_url;\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        -528
+      ],
+      "id": "4160f2af-f9a0-4922-8aa7-8b1eda5a7715",
+      "name": "Format strategy"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"comparador\": {{ $('Format comparator').item.json.comparacao }},\n  \"estrategia\": {{ $('Format strategy').item.json.estrategia }},\n  \"melhoria\": {{ $('Format improvement').item.json.melhoria }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4464,
+        -528
+      ],
+      "id": "873d8006-8b1f-4f7e-b392-9ef4da58e19e",
+      "name": "Format response"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "strategy",
+        "fields": "estrategia",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        3440,
+        -528
+      ],
+      "id": "6f358bf0-728e-450f-9d34-df6c23b025dd",
+      "name": "Insert strategy",
+      "credentials": {
+        "mongoDb": {
+          "id": "030nQ52whQNZlRf0",
+          "name": "MongoDB_ads_analyzer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  melhoria: JSON.parse($input.first().json.content.parts[0].text)\n};\ndata.melhoria.url = $('Image url').first().json.image_url;\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4016,
+        -528
+      ],
+      "id": "387fdf30-a767-44a3-8a1c-1d473cf8481c",
+      "name": "Format improvement"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "improvement",
+        "fields": "melhoria",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        4240,
+        -528
+      ],
+      "id": "e6f9b7b5-5380-41a1-9521-0f1489ec228b",
+      "name": "Insert improvement",
+      "credentials": {
+        "mongoDb": {
+          "id": "030nQ52whQNZlRf0",
+          "name": "MongoDB_ads_analyzer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.image_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        368,
+        -528
+      ],
+      "id": "5891d656-05d0-4cc6-9851-ae7569688a43",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "### 1. Receber url imagem",
+        "height": 304,
+        "width": 640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "c8e7e844-3699-4315-bd41-b8b4c996405e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### 2. Analisar o anúncio",
+        "height": 304,
+        "width": 688,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "3900ade6-6800-4193-8b04-b21267309fdc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### 3. Verificar concorrentes",
+        "height": 304,
+        "width": 752,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1232,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "52f620d6-5f2a-4351-9d64-5d2e168d1730",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "### 4. Realizar comparação com os concorrentes",
+        "height": 304,
+        "width": 800,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2000,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "c3d9eb66-0217-493d-9a52-73277ff67b9a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### 5. Elaborar estratégia de marketing",
+        "height": 304,
+        "width": 784,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2816,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "63b0e465-92e0-4977-a897-a059292175aa",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "### 6. Fornecer dicas de melhorias",
+        "height": 304,
+        "width": 768,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3616,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "c7e98e7c-3cfd-4d23-a804-66d69fd55a6d",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "### 7. Formatar resposta/final do fluxo",
+        "height": 304,
+        "width": 688,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4400,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "4dc9f4c9-a9af-4919-84c3-96b255e32e60",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Você é um analista de marketing e branding especializado em comunicação visual.\n\nSua tarefa é analisar **uma imagem de anúncio publicitário** e gerar uma análise estruturada com base na percepção visual e simbólica do conteúdo.\n\nA imagem pode conter logotipos, pessoas, objetos, produtos, textos e outros elementos típicos de uma peça publicitária.\n\nAnalise a imagem e responda com um JSON no formato abaixo:\n\n{\n  \"marca_identificada\": \"\",\n  \"setor_da_marca\": \"\",\n  \"principais_cores\": [],\n  \"elementos_visuais\": \"\",\n  \"tom_de_voz\": \"\",\n  \"mensagem_principal\": \"\",\n  \"proposta_de_valor\": \"\",\n  \"objetivo_da_campanha\": \"\",\n  \"publico_alvo_sugerido\": \"\",\n  \"insights_estrategicos\": \"\"\n}\n\n**Instruções adicionais:**\n- Se a marca não for claramente identificável, sugira possíveis marcas ou categorias (\"marca genérica de cosméticos\", \"possivelmente setor automotivo\").\n- As **principais_cores** devem ser listadas por nome ou descrição visual (ex: [\"vermelho\", \"branco\", \"preto metálico\"]).\n- O **tom_de_voz** deve refletir o sentimento e estilo que o anúncio transmite (ex: emocional, aspiracional, divertido, institucional).\n- O **objetivo_da_campanha** deve indicar a provável intenção da marca (ex: awareness, lançamento, engajamento, reposicionamento).\n- Todos os textos devem ser breves, objetivos e em português.\n- Caso a imagem não contenha informação suficiente para algum campo, use “informação insuficiente”.\n\nResponda **somente** com o JSON final, sem comentários, explicações ou formatação adicional.\n\nExemplo de resposta:\n\n{\n  \"marca_identificada\": \"Nike\",\n  \"setor_da_marca\": \"Artigos esportivos\",\n  \"principais_cores\": [\"preto\", \"branco\", \"vermelho\"],\n  \"elementos_visuais\": \"Tênis, atletas, logotipo 'swoosh'\",\n  \"tom_de_voz\": \"Inspirador e dinâmico\",\n  \"mensagem_principal\": \"Motivação e superação pessoal\",\n  \"proposta_de_valor\": \"Desempenho e estilo\",\n  \"objetivo_da_campanha\": \"Awareness e reforço de identidade\",\n  \"publico_alvo_sugerido\": \"Jovens adultos e atletas\",\n  \"insights_estrategicos\": \"Campanha reforça a conexão emocional com o esporte e a superação\"\n}",
+        "inputType": "binary",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -528
+      ],
+      "id": "b1b13333-592a-4e78-8c4f-988b323bce27",
+      "name": "Agent image analyzer",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sEegxxeLg2GZxVfk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Agent image analyzer').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um analista de marketing especializado em benchmarking criativo e otimização de campanhas publicitárias.\n\nSua tarefa é:\n1. Avaliar a análise do anúncio do cliente.\n2. Identificar, entre os concorrentes listados, qual representa o **principal concorrente estratégico** (aquele com maior semelhança de público, posicionamento ou proposta de valor).\n3. Simular uma análise de um anúncio típico desse concorrente — considerando o estilo de comunicação, cores, tom, mensagem e público.\n4. Com base na comparação entre o anúncio do cliente e o anúncio simulado do concorrente, sugerir melhorias criativas, visuais e estratégicas para o anúncio do cliente.\n5. Elaborar os textos como uma sugestão diretamente para o cliente, focando em clareza, impacto e alinhamento com a identidade da marca.\n\nResponda **somente** com um JSON no formato abaixo:\n\n{\n  \"marca_analisada\": \"\",\n  \"principal_concorrente\": \"\",\n  \"criterio_de_escolha_do_concorrente\": \"\",\n  \"analise_anuncio_concorrente\": {\n    \"principais_cores\": [],\n    \"tom_de_voz\": \"\",\n    \"mensagem_principal\": \"\",\n    \"proposta_de_valor\": \"\",\n    \"publico_alvo_sugerido\": \"\",\n    \"diferenciais_comunicacionais\": \"\"\n  },\n  \"comparativo_entre_anuncios\": {\n    \"pontos_fortes_do_cliente\": \"\",\n    \"pontos_fortes_do_concorrente\": \"\",\n    \"oportunidades_de_melhoria_para_o_cliente\": \"\"\n  },\n  \"sugestoes_de_melhoria\": {\n    \"mensagem\": \"\",\n    \"elementos_visuais\": \"\",\n    \"tom_de_voz\": \"\",\n    \"call_to_action\": \"\",\n    \"proposta_de_valor_reforçada\": \"\",\n    \"exemplo_resumido_de_reformulacao\": \"\"\n  },\n  \"insight_final\": \"\"\n}\n\n**Instruções adicionais:**\n- A marca analisada contém os dados a seguir:\n{{ $('Agent image analyzer').item.json.content.parts[0].text }}\n\n- A lista de concorrentes é a seguinte:\n{{ $('Agent competition').item.json.content.parts[0].text }}\n\n- A escolha do “principal_concorrente” deve ser lógica e explicada no campo “criterio_de_escolha_do_concorrente”.\n- A análise do anúncio do concorrente deve ser **simulada** com base em como essa marca normalmente se comunica (ex: campanhas conhecidas, tom de marca, estilo visual).\n- Em “comparativo_entre_anuncios”, descreva as principais diferenças e oportunidades da marca do cliente em relação ao concorrente.\n- As “sugestoes_de_melhoria” devem ser práticas, específicas e alinhadas à identidade da marca do cliente.\n- O campo “exemplo_resumido_de_reformulacao” deve trazer uma sugestão sintética de como o anúncio poderia ser refeito (ex: “Destacar mais o benefício X com tom mais emocional e cores que transmitam confiança.”)\n- “insight_final” deve conter uma síntese estratégica do aprendizado da comparação.\n- A mensagem deve ser clara e será repassada diretamente ao cliente. \n- Se faltar informação suficiente, use “informação insuficiente”.\n\nResponda em português e **somente com o JSON final**."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        -528
+      ],
+      "id": "ef6336b8-4321-4a0d-9ba7-7329de3f4e29",
+      "name": "Agent benchmarking",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sEegxxeLg2GZxVfk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image url": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber image url (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Image url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent competition": {
+      "main": [
+        [
+          {
+            "node": "Format competition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent comparator": {
+      "main": [
+        [
+          {
+            "node": "Format comparator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert analysis": {
+      "main": [
+        [
+          {
+            "node": "Agent competition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format analysis": {
+      "main": [
+        [
+          {
+            "node": "Insert analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format competition": {
+      "main": [
+        [
+          {
+            "node": "Insert competition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert competition": {
+      "main": [
+        [
+          {
+            "node": "Agent comparator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format comparator": {
+      "main": [
+        [
+          {
+            "node": "Insert comparator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert comparator": {
+      "main": [
+        [
+          {
+            "node": "Agent strategist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent strategist": {
+      "main": [
+        [
+          {
+            "node": "Format strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format strategy": {
+      "main": [
+        [
+          {
+            "node": "Insert strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert strategy": {
+      "main": [
+        [
+          {
+            "node": "Agent benchmarking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format improvement": {
+      "main": [
+        [
+          {
+            "node": "Insert improvement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert improvement": {
+      "main": [
+        [
+          {
+            "node": "Format response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Agent image analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent image analyzer": {
+      "main": [
+        [
+          {
+            "node": "Format analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent benchmarking": {
+      "main": [
+        [
+          {
+            "node": "Format improvement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d8af808e-544a-4db6-907f-c1d7d5cd0c80",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e83ffc98ef0b3cc75414e07d9410da34c2b8a34cb050101236a89f5a2ebb13c"
+  },
+  "id": "vlCKzxsAH8PebNQi",
+  "tags": []
+}
