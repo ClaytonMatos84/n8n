@@ -1,0 +1,337 @@
+{
+  "name": "GeraAd",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "imagem-ad",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "d4ab20d9-c99e-4696-8382-8ce24ae84db9",
+      "name": "Webhook",
+      "webhookId": "03b8829b-f8cd-45a1-b70f-393e33542ebf"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.query.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "3862a7d0-64e1-48c2-a52a-3601b6b3b796",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.data }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um especialista em marketing e branding especializado em comunicação visual.\n\nSua tarega é analisar o site do anunciante e gerar uma análise estruturada com base na percepção visual e simbólica do conteúdo.\n\nAnalise as seguintes informações e responda com um JSON no formato abaixo:\n\n{\n  \"produto_nome\": \"\",\n  \"produto_publico_alvo\": \"\",\n  \"produto_beneficio_principal\": \"\",\n  \"produto_diferencial\": \"\",\n  \"produto_oferta_condicao\": \"\",\n  \"produto_cenario_uso\": \"\",\n  \"principais_cores\": [],\n  \"marca_nome\": \"\",\n  \"estilo_tom\": \"\",\n  \"linguagem_publico\": \"\"\n}\n\nInstruções:\n- Analise o título, subtítulo ou descrições da página para identificar “nome do produto”.\n- Identifique no texto ou contexto da página quem é o público-alvo.\n- Localize qual é o principal benefício destacado para o cliente.\n- Detecte o que diferencia esse produto da concorrência.\n- Se houver oferta, desconto, condição especial, capture-o.\n- Encontre também um cenário ou contexto de uso descrito ou implícito (“em casa”, “na academia”, “ao ar livre”).\n- Se houver, capture nome da marca.\n- Permita que estilo_tom e linguagem_publico fiquem com valores padrão se não forem encontrados.\n- Se não houver informações suficientes, indique “informação insuficiente”.\n\nRetorne apenas o JSON puro (sem explicações adicionais)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "2062128b-fa6d-4656-8983-d51035b02bd6",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2048,
+        32
+      ],
+      "id": "55d18711-765f-42d0-84ba-b339ce93d65b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Message a model').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "=Você é um redator publicitário especializado em copywriting e comunicação persuasiva.\n\nSua tarefa é criar um anúncio atraente com base nas informações estruturadas fornecidas no JSON a seguir:\n{{ $json.analise }}\n\nGere um **anúncio publicitário** em formato de texto, seguindo estas diretrizes:\n\n- O texto deve ser curto, envolvente e direto (máximo 3 parágrafos curtos ou até 400 caracteres).\n- Use uma linguagem compatível com o público-alvo e o tom identificado.\n- Destaque o principal benefício e o diferencial do produto.\n- Se houver oferta ou condição especial, inclua-a de forma natural.\n- Se houver cenário de uso, incorpore-o como parte do contexto (ex: “para o seu dia a dia na academia”).\n- Mantenha a identidade visual e simbólica coerente com as cores e estilo da marca.\n\nRetorne apenas um JSON no formato:\n{\n  \"titulo\": \"\",\n  \"descricao\": \"\",\n  \"chamada_para_acao\": \"\",\n  \"tom\": \"\",\n  \"estilo_visual\": \"\",\n  \"cores_recomendadas\": []\n}\n\nInstruções:\n\n- titulo: frase principal de impacto.\n- descricao: corpo do anúncio (pode ser 1 a 2 frases).\n- chamada_para_acao: algo que incentive o usuário a agir.\n- tom: tom de voz adotado no texto (ex: inspirador, técnico, descontraído).\n- estilo_visual: breve recomendação de estilo visual (ex: moderno, minimalista, vibrante).\n- cores_recomendadas: lista de cores baseadas nas principais cores da marca.\n- Se não houver informações suficientes, indique “informação insuficiente”.\n\nRetorne somente o JSON, sem explicações adicionais."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -64
+      ],
+      "id": "38be0517-81b0-404f-abb5-602f56ea8f40",
+      "name": "Gera ad prompt",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Gera ad prompt').first().json.content.parts[0].text.replace(/^```json\\n/, '').replace(/```$/, '');\n\nreturn {\n  gerar_ad: {\n    analise: $('Format analysis').first().json.analise,\n    prompt: JSON.parse(data)\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        -64
+      ],
+      "id": "ad92b3f2-558f-4acc-9c12-f9922e7109f7",
+      "name": "Format adPrompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.content.parts[0].text.replace(/^```json\\n/, '').replace(/```$/, '');\n\nconst result = { \"analise\": JSON.parse(data) };\nresult.analise.url = $('Webhook').first().json.query.url;\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -64
+      ],
+      "id": "df63654b-01af-4b2c-932e-2620829227bc",
+      "name": "Format analysis"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "generate_ad",
+        "fields": "gerar_ad",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        2048,
+        -160
+      ],
+      "id": "ccfbbfcb-bcc2-43e4-a8b1-46ea84a6e985",
+      "name": "Insert documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        -160
+      ],
+      "id": "067421b7-becb-43e4-9b13-7d3b2abbe020",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "=Você é um especialista em marketing e branding especializado em comunicação visual. Sua tarefa: **criar uma imagem publicitária final pronta para veiculação** seguindo estritamente as instruções abaixo.\n\n### Entradas (use exatamente estes bindings do n8n):\n\n* Dados do produto/marca:\n  {{ $('Message a model').item.json.content.parts[0].text }}\n* Texto do anúncio (já gerado pelo nó anterior — título, descrição e CTA):\n  {{ $json.content.parts[0].text }}\n\n### Regras obrigatórias (ler com atenção — NÃO IGNORAR):\n\n1. **Dimensões exatas:** 300 x 250 pixels. **Não** gerar outra dimensão.\n2. **Formato de saída:** retornar apenas a imagem (sem metadados textuais ou explicações).\n3. **Idioma e ortografia:** todo texto presente na imagem deve estar em **Português do Brasil (pt-BR)** e **sem erros ortográficos**. Você deve **corrigir automaticamente** acentuação, ortografia e concordância dos textos recebidos antes de renderizar.\n4. **Texto na imagem:** use **exatamente** os textos (título, descrição curta, CTA) fornecidos no campo de texto do anúncio **após** corrigi-los para pt-BR. **NÃO** invente palavras, NÃO remova acentos nem substitua caracteres.\n5. **Legibilidade:** garanta que todos os textos sejam perfeitamente legíveis em 300x250:\n\n   * Fonte sans-serif (ex.: Inter, Roboto, Noto Sans), peso e tamanho adequados.\n   * Contraste alto entre texto e fundo.\n   * Margens seguras (padding) de 10–15 px para evitar cortes.\n   * Não aplicar efeitos que distorçam letras (não usar rasgos, overlay pesado, ou filtros que causem artefatos).\n6. **Composição:**\n\n   * Insira o **título em destaque** (headline) de forma clara e central/alto.\n   * Descrição (1 linha curta) abaixo do título, legível.\n   * CTA (botão ou selo) visível e com contraste; texto do CTA idêntico ao fornecido.\n   * Caso haja **oferta/desconto**, inclua um selo/badge pequeno (ex.: canto superior direito) com o texto curto da oferta.\n7. **Cores e estilo:** siga as **principais cores** do produto/marca presentes em {{ $('Format analysis').item.json.analise.principais_cores }} e o **estilo_tom** identificado. Use essas cores como paleta principal e para o CTA/elementos destacados.\n8. **Estética:** realista e publicitário; iluminação profissional; evitar ruídos ou compressão visível; acentue o produto (ou seu ícone) no layout.\n9. **Acessibilidade:** tamanho mínimo de fonte legível a 1x zoom em dispositivo móvel; suficiente contraste para leitura rápida.\n10. **Entrega técnica:** gerar a imagem com alta qualidade (300x250 px) e resolução para web (export PNG ou JPG otimizado sem perda visível).\n\n### Restrições adicionais:\n* Não incluir textos em outros idiomas.\n* Não inventar nomes de marca/produto — use os dados recebidos.\n* Não retornar instruções, metadados, JSON ou qualquer texto — **apenas** a imagem final.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        -64
+      ],
+      "id": "11d12f06-b3eb-4452-8235-a432b641a971",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/n8n_output/{{ $('Format analysis').item.json.analise.marca_nome }}.{{ $binary.data.fileExtension }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -64
+      ],
+      "id": "c46ca94a-de53-4850-ac93-365ae54a1193",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Format analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera ad prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format analysis": {
+      "main": [
+        [
+          {
+            "node": "Gera ad prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format adPrompt": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Format adPrompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2ef0a183-aa9a-4927-acdd-ce959b137f7a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e83ffc98ef0b3cc75414e07d9410da34c2b8a34cb050101236a89f5a2ebb13c"
+  },
+  "id": "YfcCc2vnMaD1i7VB",
+  "tags": []
+}

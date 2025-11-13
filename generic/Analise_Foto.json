@@ -1,0 +1,268 @@
+{
+  "name": "Analise/Foto",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1296,
+        288
+      ],
+      "id": "73c77d3c-0898-454c-ad5c-97c4f214e7c4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analise-foto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        288
+      ],
+      "id": "0d9f93f6-77d7-48d0-b798-72f72533b3c8",
+      "name": "Webhook",
+      "webhookId": "7e7656c2-9919-40b2-b5ad-c73ddd21b987"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.content.parts[0].text.replace(/^```json\\n/, '').replace(/```$/, '');\n\nreturn {\n  \"analise\": JSON.parse(data)\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        288
+      ],
+      "id": "70b08584-968b-4900-a35e-4afb441eca94",
+      "name": "Format photo analysis"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=Você é um analisador de imagens.  \nVocê receberá uma imagem e deverá gerar uma análise detalhada **apenas no formato JSON válido**.  \nNão adicione explicações, textos adicionais, markdown, ou qualquer coisa fora do JSON.\n\nAnalise a imagem considerando os seguintes pontos:\n\n1. **Descrição da cena:** descreva de forma geral o que está acontecendo.\n2. **Objetos identificados:** liste os principais objetos visíveis na imagem.\n3. **Pessoas:** informe se há pessoas, quantas e o que estão fazendo.\n4. **Local/ambiente:** identifique o tipo de local (ex: praia, parque, casa, escritório etc.).\n5. **Estilo da foto:** informe se a foto é profissional, selfie, paisagem, artística, publicitária etc.\n6. **Sentimento transmitido:** indique a emoção ou sensação geral (ex: alegria, calma, tristeza, nostalgia etc.).\n7. **Observações adicionais:** detalhes relevantes não cobertos acima.\n\nRetorne o resultado **somente** neste formato JSON:\n\n{\n  \"descricao_cena\": \"\",\n  \"objetos_identificados\": [],\n  \"pessoas\": {\n    \"quantidade\": \"\",\n    \"descricao\": \"\"\n  },\n  \"local_ambiente\": \"\",\n  \"estilo_foto\": \"\",\n  \"sentimento_transmitido\": \"\",\n  \"observacoes_adicionais\": \"\"\n}\n\nPara qualquer campo que não puder ser identificado, retorne o valor `\"informação insuficiente\"`.",
+        "inputType": "binary",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        624,
+        288
+      ],
+      "id": "c828eff3-7b22-43a1-b3c4-90158de49781",
+      "name": "Analyze a photo",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "photo_analysis",
+        "fields": "analise",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        288
+      ],
+      "id": "619e715f-6f22-4238-a67f-1023bae2c951",
+      "name": "Insert analysis",
+      "credentials": {
+        "mongoDb": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/n8n_output/{{ $binary.data.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        624,
+        96
+      ],
+      "id": "5d2593e7-9045-4af9-9c70-53f48f34b415",
+      "name": "Save photo"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        848,
+        96
+      ],
+      "id": "d10f519a-16f5-48f9-9947-8a6aeff49701",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a761abce-ef3a-422c-bd54-c28c57705d72",
+              "leftValue": "={{ $binary.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        288
+      ],
+      "id": "a3a27414-ec2c-4873-85db-91947ed1af0d",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        624,
+        480
+      ],
+      "id": "a80fa830-c756-40de-b163-dd3fecda94df",
+      "name": "No Operation, do nothing1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format photo analysis": {
+      "main": [
+        [
+          {
+            "node": "Insert analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze a photo": {
+      "main": [
+        [
+          {
+            "node": "Format photo analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert analysis": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save photo": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Save photo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze a photo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6214cb74-ec5b-4283-bbda-48679622dafa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e83ffc98ef0b3cc75414e07d9410da34c2b8a34cb050101236a89f5a2ebb13c"
+  },
+  "id": "MPiP0pILFtpAzjJj",
+  "tags": []
+}

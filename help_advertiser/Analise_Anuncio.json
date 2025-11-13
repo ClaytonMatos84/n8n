@@ -94,8 +94,8 @@
       "name": "Agent competition",
       "credentials": {
         "googlePalmApi": {
-          "id": "sEegxxeLg2GZxVfk",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -129,8 +129,8 @@
       "name": "Agent comparator",
       "credentials": {
         "googlePalmApi": {
-          "id": "sEegxxeLg2GZxVfk",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -151,8 +151,8 @@
       "name": "Insert analysis",
       "credentials": {
         "mongoDb": {
-          "id": "030nQ52whQNZlRf0",
-          "name": "MongoDB_ads_analyzer"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -212,8 +212,8 @@
       "name": "Insert competition",
       "credentials": {
         "mongoDb": {
-          "id": "030nQ52whQNZlRf0",
-          "name": "MongoDB_ads_analyzer"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -234,8 +234,8 @@
       "name": "Insert comparator",
       "credentials": {
         "mongoDb": {
-          "id": "030nQ52whQNZlRf0",
-          "name": "MongoDB_ads_analyzer"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -269,8 +269,8 @@
       "name": "Agent strategist",
       "credentials": {
         "googlePalmApi": {
-          "id": "sEegxxeLg2GZxVfk",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -319,8 +319,8 @@
       "name": "Insert strategy",
       "credentials": {
         "mongoDb": {
-          "id": "030nQ52whQNZlRf0",
-          "name": "MongoDB_ads_analyzer"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -354,8 +354,8 @@
       "name": "Insert improvement",
       "credentials": {
         "mongoDb": {
-          "id": "030nQ52whQNZlRf0",
-          "name": "MongoDB_ads_analyzer"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -515,8 +515,8 @@
       "name": "Agent image analyzer",
       "credentials": {
         "googlePalmApi": {
-          "id": "sEegxxeLg2GZxVfk",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "",
+          "name": ""
         }
       }
     },
@@ -550,8 +550,8 @@
       "name": "Agent benchmarking",
       "credentials": {
         "googlePalmApi": {
-          "id": "sEegxxeLg2GZxVfk",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "",
+          "name": ""
         }
       }
     }
